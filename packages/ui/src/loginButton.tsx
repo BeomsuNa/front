@@ -1,9 +1,15 @@
 import React from "react";
 import styled from "styled-components";
 
-const StyledLoginButton = styled.button`
-  background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
-  color: white;
+interface ButtonProps {
+  $startColor? : string;
+  $endColor? : string;
+  $textcolor? : string;
+  
+}
+
+const StyledLoginButton = styled.button<ButtonProps>`
+  background: ${({ $startColor, $endColor }) => `linear-gradient(90deg, ${$startColor || '#3b82f6'} 0%, ${$endColor || '#2563eb'} 100%)`};
   padding: 12px 24px;
   border: none;
   border-radius: 8px;
@@ -18,7 +24,7 @@ const StyledLoginButton = styled.button`
   transition: background 0.3s ease, transform 0.2s ease;
 
   &:hover {
-    background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%);
+     background: ${({ $startColor, $endColor }) => `linear-gradient(90deg, ${$startColor || '#3b82f6'} 0%, ${$endColor || '#2563eb'} 100%)`};
     transform: translateY(-1px);
   }
 
@@ -38,13 +44,17 @@ const Icon = styled.span`
 interface LoginButtonProps {
   onClick?: () => void;
   text?: string;
+  startColor?: string;
+  endColor?: string;
 }
 
 export const LoginButton: React.FC<LoginButtonProps> = ({
   onClick,
   text = "Login",
+  startColor,
+  endColor,
 }) => (
-  <StyledLoginButton onClick={onClick}>
+  <StyledLoginButton onClick={onClick} $startColor={startColor} $endColor={endColor}>
     <Icon />
     {text}
   </StyledLoginButton>

@@ -1,12 +1,12 @@
 import ReactDOM from 'react-dom/client'
 import './index.css'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import LoginPage from './frontend/page/loginPage.tsx'
-import CreatePage from './frontend/page/createPage.tsx'
-import AboutPage from './frontend/page/aboutPage.tsx'
-import GalleryPage from './frontend/page/galleryPage.tsx'
+import LoginPage from './page/loginPage.tsx'
+import CreatePage from './page/createPage.tsx'
+import AboutPage from './page/aboutPage.tsx'
+import GalleryPage from './page/galleryPage.tsx'
 import BackGroundLayout from './backGroundLayout.tsx'
-import MainPage from './frontend/page/mainPage.tsx'
+import MainPage from './page/mainPage.tsx'
 
 export const Layout = () => <BackGroundLayout />
 export const Main = () => <MainPage />

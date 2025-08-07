@@ -41,7 +41,7 @@ const LoginPage = () => {
           >
             GITHUB
           </button>
-          <LoginButton text="Login"></LoginButton>
+          <LoginButton text="Login" startColor='red' endColor='red'></LoginButton>
         </form>
       </div>
     </div>
