@@ -3,9 +3,10 @@
     "composite": true,
     "tsBuildInfoFile": "frontend/node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "target": "ES2020",
+    "module": "commonjs",
+    "esModuleInterop": true,
     "useDefineForClassFields": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
@@ -14,11 +15,12 @@
       ],
       "ui": [
         "../packages/ui/src"
-      ]
+      ],
+      "@backend/*": ["apps/photoAi/backend/src/*"]
     },
 
     /* Bundler mode */
-    "moduleResolution": "bundler",
+
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -32,5 +34,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["frontend/src", "frontend"]
+  "include": ["frontend/src", "frontend","apps/photoAi/backend/src"]
 }
