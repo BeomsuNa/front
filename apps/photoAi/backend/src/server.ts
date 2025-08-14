@@ -6,11 +6,14 @@ import authRouter from './routes/auth';
 
 const app = express();
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+app.use(express.json())
 app.use(bodyParser.json());
 
+app.get('/', (req, res) => {
+  res.send('Backend 서버가 정상적으로 실행 중입니다!');
+});
 // 라우트
-app.use('/api', authRouter);
-// TODO: /api/photos 라우트 추가
+app.use('/api/auth', authRouter);
 
 // 에러 핸들링 (간단 예시)
 app.use((err: any, req: any, res: any, next: any) => {

@@ -34,5 +34,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["frontend/src", "frontend","apps/photoAi/backend/src"]
+  "include": ["frontend/src", "frontend"]
 }

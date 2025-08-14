@@ -1,4 +1,5 @@
 import { LoginButton } from '@comp/ui';
+import { Link } from 'react-router-dom';
 
 
 const LoginPage = () => {
@@ -17,6 +18,11 @@ const LoginPage = () => {
             placeholder="비밀번호"
             className="px-4 py-3 rounded border border-gray-300 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
+                    <span className="flex gap-2 text-sm text-gray-600">아직 아이디가 없으신가요?
+                      <nav>
+                      <Link to='/signup' className='text-blue-500 hover:underline'>회원가입</Link>
+                    </nav>
+                    </span>
           <button
             type="submit"
             className="py-3 rounded bg-blue-500 text-white font-semibold text-base hover:bg-blue-600 transition"
@@ -42,6 +48,7 @@ const LoginPage = () => {
             GITHUB
           </button>
           <LoginButton text="Login" startColor='red' endColor='red'></LoginButton>
+
         </form>
       </div>
     </div>
