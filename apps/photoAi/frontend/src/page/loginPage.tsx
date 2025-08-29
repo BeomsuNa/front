@@ -1,8 +1,24 @@
 import { LoginButton } from '@comp/ui';
+import { useGoogleLogin } from '@react-oauth/google';
+import axios from 'axios';
 import { Link } from 'react-router-dom';
 
 
 const LoginPage = () => {
+      const OauthGoogle = useGoogleLogin({
+        onSuccess: async (tokenResponse) => {
+          console.log(tokenResponse);
+          const res = await axios.post("/api/auth/google", {
+            access_token: tokenResponse.access_token,
+          })
+          console.log('백엔드 응답', res.data)
+          localStorage.setItem("photoAiToken", res.data.token);
+        },
+        onError: () => {
+        console.log("구글 로그인 실패")
+        },
+      })
+
   return (
     <div className="min-h-screen flex justify-center bg-gray-100">
       <div className="w-80 p-8 rounded-lg shadow-lg bg-white flex flex-col gap-6">
@@ -14,6 +30,7 @@ const LoginPage = () => {
             className="px-4 py-3 rounded border border-gray-300 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
           <input
+            id='password'
             type="password"
             placeholder="비밀번호"
             className="px-4 py-3 rounded border border-gray-300 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -30,14 +47,17 @@ const LoginPage = () => {
             로그인
           </button>
             <button
-            type="submit"
+            type="button"
             className="py-3 rounded bg-blue-500 text-white font-semibold text-base hover:bg-blue-600 transition"
+            onClick={() => OauthGoogle()}
           >
             Google
           </button>
+
             <button
             type="submit"
             className="py-3 rounded bg-blue-500 text-white font-semibold text-base hover:bg-blue-600 transition"
+
           >
             KAKAO
           </button>

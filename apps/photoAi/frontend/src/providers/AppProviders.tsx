@@ -1,3 +1,4 @@
+import { GoogleOAuthProvider } from '@react-oauth/google'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
@@ -13,9 +14,11 @@ const queryClient = new QueryClient({
 
 export default function AppProviders({ children }: { children: React.ReactNode }) {
   return (
-    <QueryClientProvider client={queryClient}>
-      {children}
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID!}>
+      <QueryClientProvider client={queryClient}>
+        {children}
       <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </GoogleOAuthProvider>
   )
 }

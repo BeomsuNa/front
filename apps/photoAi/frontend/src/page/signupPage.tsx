@@ -2,16 +2,12 @@ import EmailInputWithDomain from "@/components/EmailInputWithDomain";
 import { useAuth } from "@/state/auth.store";
 import axios from "axios";
 import React, { useEffect, useMemo,  useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-
-
+import { useNavigate } from "react-router-dom";
 
 const PASSWORD_RE =
   /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,20}$/; // 영문+숫자+특수문자, 8~20자
 
 export default function Signup() {
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get('token');
   const [email, setEmail] = useState('');
   const [msg, setMsg] = useState('');   
   const [isVerified, setIsVerified] = useState(false);
@@ -20,16 +16,25 @@ export default function Signup() {
   const [confirm, setConfirm] = useState("");
   const passValid = useMemo(() => PASSWORD_RE.test(password), [password]);
   const passMatch = useMemo(() => password.length > 0 && password === confirm, [password, confirm]);
-  const setToken = useAuth((s) => s.setToken);
   const navigate = useNavigate()
+  axios.defaults.withCredentials = true;
 
-    useEffect(() => {
-    if (token) {
-      setIsVerified(true);
-      // zustand에 토큰 저장 등 추가 로직
-      setToken(token);
-    }
-  }, [token]);
+
+  useEffect(() => {
+    const id = setInterval(async () => {
+      try {
+        const res = await fetch('/api/auth/signup-status', { credentials: 'include' });
+        const data = await res.json();
+        if (data.verified) {
+          setIsVerified(true);
+          setEmail(data.email);
+          clearInterval(id);
+        }
+      } catch {}
+    }, 1500);
+    return () => clearInterval(id);
+  }, []);
+
 
   const canSubmit =
     email.trim().length > 0 &&
@@ -56,6 +61,7 @@ export default function Signup() {
     }
   }
 
+
 async function sendMagicLink() {
   try {
     await axios.post('/api/auth/magic-link', {email})
@@ -63,7 +69,6 @@ async function sendMagicLink() {
   }catch (err :any) {
       setMsg(err?.response?.data?.message || "에러가 발생했습니다.");
   }
-
 }
 
   return (
@@ -72,7 +77,6 @@ async function sendMagicLink() {
         <h2 className="text-2xl font-bold mb-6 text-center">회원가입</h2>
         <form onSubmit={handleSubmit} noValidate>
           {/* 이메일 (링크 인증 방식) */}
-
           {isVerified ? (
             <div className="mb-4">
           <EmailInputWithDomain value={email} onChange={setEmail} isVerified={isVerified} />
@@ -81,7 +85,6 @@ async function sendMagicLink() {
           </button>
             <p className="mt-2 text-sm text-green-600">이메일이 인증되었습니다.</p>
           </div>
-
           ) : (
           <div className="mb-4">
           <EmailInputWithDomain value={email} onChange={setEmail} isVerified={isVerified} />
@@ -150,8 +153,6 @@ async function sendMagicLink() {
             />
 
           </div>
-
-
           <button
             type="submit"
             disabled={!canSubmit}

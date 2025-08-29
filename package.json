@@ -3,7 +3,6 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
-
     "dev:frontend": "npm --workspace=apps/photoAi/frontend run dev",
     "dev:backend": "npm --workspace=apps/photoAi/backend run dev",
     "dev": "npm run dev:frontend & npm run dev:backend",
@@ -20,14 +19,7 @@
   },
   "packageManager": "npm@11.4.2",
   "workspaces": [
-    "apps/*/frontend",
-    "apps/*/backend",
-    "packages/*"
-  ],
-  "dependencies": {
-    "@types/react": "^18.3.1",
-    "@types/react-dom": "^18.3.1",
-    "react-router-dom": "^7.7.1",
-    "zustand": "^5.0.7"
-  }
+    "packages/*",
+    "apps/photoAi/frontend"
+  ]
 }
