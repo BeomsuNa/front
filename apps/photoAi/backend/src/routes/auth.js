@@ -5,6 +5,9 @@ import { mailer } from '../utils/mailer.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import { OAuth2Client } from 'google-auth-library';
+import { authMiddleware } from '../utils/authMiddleware.js';
+
 
 dotenv.config();
 
@@ -65,39 +68,44 @@ router.post('/login', async (req, res) => {
 });
 
 // /api/google
-router.post('/auth/google', async(req, res)=>{
-  const {credentials} = req.body;
+router.post('/google', async(req, res)=>{
+  const {access_token} = req.body;
+  console.log('구글 엑세스 토큰:', access_token)
   try {
-    const ticket = await client.verifyIdToken({
-      idToken: credentials,
-      audience: process.env.GOOGLE_CLIENT_ID
-    });
-    const payload = ticket.getPayload();
-   const [rows] = await db.query(
-      "SELECT * FROM users WHERE provider=? AND provider_id=? LIMIT 1",
-      ["google", payload.sub]
+    const {data : profile} = await axios.get(
+       "https://www.googleapis.com/oauth2/v2/userinfo",
+       {headers : {Authorization : `Bearer ${access_token}`} }
     );
-    let user = rows[0]
-
-    if (!user) {
+    const {email, name, id: provider_id} = profile;
+    console.log('현재 받아지는 데이터는? :',profile)
+    const [rows] = await db.query(
+      `SELECT * FROM oauth_users WHERE email = ? AND provider = 'google'`,
+      [email]
+    )
+    let userId;
+    if (rows.length === 0) {
+      const expires_at = new Date(Date.now() + 1000* 60 * 60 * 24 * 3); // 3일후
       const [result] = await db.query(
-        "INSERT INTO users (email, name, provider, provider_id, profile_image) VALUES (?, ?, ?, ?, ?)",
-        [payload.email, payload.name, "google", payload.sub, payload.picture]
+        `INSERT INTO oauth_users (email, name, expires_at, provider_id) VALUES (?, ?, ?, 'google', ?)`,
+        [email, name, expires_at, provider_id]
       );
-      user = { id: result.insertId, email: payload.email, name: payload.name };
+      userId = result.insertId
+    } else {
+      userId = rows[0].id
     }
-
-        // 4. JWT 발급
+        // 4. JWT 발급 
     const token = jwt.sign(
-      { userId: user.id, email: user.email },
+      { userId: userId, email: email, provider : 'google' },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
-    res.json({ token, user });
+    res.json({ token, user: { id: userId, email, name } });
   } catch (error) {
     res.status(401).json({ error: 'Invalid credentials' });
   }
 })
+
+
 
 
 
@@ -175,5 +183,10 @@ router.get('/signup-status', (req, res) => {
   }
 });
 
+// /api/me
+router.get(' /me', authMiddleware, async (req,res) => {
+    const user = req.user;
+    res.json({ user });
+})
 
 export default router;
