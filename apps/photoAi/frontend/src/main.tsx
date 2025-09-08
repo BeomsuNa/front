@@ -10,6 +10,7 @@ import BackGroundLayout from './backGroundLayout.tsx'
 import MainPage from './page/mainPage.tsx'
 import SignupPage from './page/signupPage.tsx'
 import AppProviders from './providers/AppProviders.tsx'
+import CallBack from './components/Callback.tsx'
 
 export const Layout = () => <BackGroundLayout />
 export const Main = () => <MainPage />
@@ -29,7 +30,8 @@ const router = createBrowserRouter([
       { path: '/create', element: <Create /> },
       { path: '/gallery', element: <Gallery /> },
       { path: '/about', element: <About /> },
-      { path: '/signup', element: <Signup /> }
+      { path: '/signup', element: <Signup /> },
+      { path: '/oauth/callback', element: <CallBack /> }
     ]
 
   },

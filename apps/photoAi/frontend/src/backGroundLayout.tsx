@@ -3,6 +3,7 @@ import { Link, Outlet } from 'react-router-dom';
 
 
 const backGroundLayout: React.FC = () => {
+  
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50">
       {/* Header */}

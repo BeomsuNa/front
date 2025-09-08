@@ -3,50 +3,52 @@ import { LoginButton } from '@comp/ui';
 import { useGoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
 import { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, redirect, useLocation, useNavigate } from 'react-router-dom';
 const LoginPage = () => {
+  const location = useLocation();
   const navigate = useNavigate();
-      const OauthGoogle = useGoogleLogin({
-        scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
-        onSuccess: async (tokenResponse) => {
-          console.log('보낼 액세스토큰 :', tokenResponse.access_token)
-          const res = await axios
-          .post("/api/auth/google", {
-            access_token: tokenResponse.access_token,
-          })
-          const { token, user } = res.data;
-
-          localStorage.setItem('token',token)
-          useAuth.getState().setUser(user)
-          useAuth.getState().setToken(token)
-          navigate('/');
-        },
-        onError: () => {
-          console.log('로그인 실패');
-          alert("구글 로그인 실패");
-        },
+  const OauthGoogle = useGoogleLogin({
+    scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
+      onSuccess: async (tokenResponse) => {
+      const res = await axios
+      .post("/api/auth/google", {
+      access_token: tokenResponse.access_token,
+      })
+    const { token, user } = res.data;
+      localStorage.setItem('token',token)
+      useAuth.getState().setUser(user)
+      useAuth.getState().setToken(token)
+      navigate('/');
+      },
+      onError: () => {
+        console.log('로그인 실패');
+        alert("구글 로그인 실패");
+      },
       })
 
-      useEffect(() => {
-        const initAuth = async() => {
-          console.log('현재상태는? :', useAuth.getState());
-          const token = localStorage.getItem('token');
-          if (!token) return;
-          try {
-            const res = await axios.get('/api/auth/me', {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-           useAuth.getState().setUser(res.data.user);
-           useAuth.getState().setToken(token);
-           console.log('토큰 유지 성공')
-          } catch (error) {
-            console.error(error);
-          }
-        }
-        initAuth();
-      }, [])
+const handleKakaoLogin = async () => {
+  const url = `https://kauth.kakao.com/oauth/authorize?response_type=code` +
+    `&client_id=${import.meta.env.VITE_KAKAO_CLIENT_ID}` +
+    `&redirect_uri=${import.meta.env.VITE_KAKAO_REDIRECT_URI}`;
+    window.location.href = url;  
+};
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const code = params.get("code");
+    if (code) {
+      console.log('카카오 로그인 성공')
+      axios.post("/api/auth/kakao", { code })
+      .then(res => {
+        const { token, user } = res.data;
+        localStorage.setItem('token', token);
+        useAuth.getState().setUser(user);
+        useAuth.getState().setToken(token);
+      })
+    }
+
+  }, [location, navigate]);
+
   return (
     <div className="min-h-screen flex justify-center bg-gray-100">
       <div className="w-80 p-8 rounded-lg shadow-lg bg-white flex flex-col gap-6">
@@ -82,8 +84,9 @@ const LoginPage = () => {
             Google
           </button>
             <button
-            type="submit"
-            className="py-3 rounded bg-blue-500 text-white font-semibold text-base hover:bg-blue-600 transition"
+            type="button"
+            className="py-3 rounded bg-[#FEE500] text-[#000000] font-semibold text-base hover:bg-yellow-700 transition hover:text-[#FEE500]"
+            onClick={() => handleKakaoLogin()}
           >
             KAKAO
           </button>
@@ -93,8 +96,6 @@ const LoginPage = () => {
           >
             GITHUB
           </button>
-          <LoginButton text="Login" startColor='red' endColor='red'></LoginButton>
-
         </form>
       </div>
     </div>

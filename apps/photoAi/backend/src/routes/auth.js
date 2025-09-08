@@ -2,6 +2,7 @@
 import { Router } from 'express';
 import { db } from '../db.js';
 import { mailer } from '../utils/mailer.js';
+import axios from 'axios';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
@@ -70,14 +71,12 @@ router.post('/login', async (req, res) => {
 // /api/google
 router.post('/google', async(req, res)=>{
   const {access_token} = req.body;
-  console.log('구글 엑세스 토큰:', access_token)
   try {
     const {data : profile} = await axios.get(
        "https://www.googleapis.com/oauth2/v2/userinfo",
        {headers : {Authorization : `Bearer ${access_token}`} }
     );
     const {email, name, id: provider_id} = profile;
-    console.log('현재 받아지는 데이터는? :',profile)
     const [rows] = await db.query(
       `SELECT * FROM oauth_users WHERE email = ? AND provider = 'google'`,
       [email]
@@ -86,8 +85,8 @@ router.post('/google', async(req, res)=>{
     if (rows.length === 0) {
       const expires_at = new Date(Date.now() + 1000* 60 * 60 * 24 * 3); // 3일후
       const [result] = await db.query(
-        `INSERT INTO oauth_users (email, name, expires_at, provider_id) VALUES (?, ?, ?, 'google', ?)`,
-        [email, name, expires_at, provider_id]
+        `INSERT INTO oauth_users (email, name, provider, provider_id) VALUES (?, ?, ?, ?)`,
+        [email, name, 'google', provider_id]
       );
       userId = result.insertId
     } else {
@@ -101,6 +100,7 @@ router.post('/google', async(req, res)=>{
     );
     res.json({ token, user: { id: userId, email, name } });
   } catch (error) {
+    console.error('구글 API 호출 실패:', error?.response?.data || error.message)
     res.status(401).json({ error: 'Invalid credentials' });
   }
 })
@@ -108,9 +108,7 @@ router.post('/google', async(req, res)=>{
 
 
 
-
 // GET 
-
 // /api/magicLink
 router.get("/magic/callback", async (req, res, next) => {
   const cookieBase = {
@@ -171,6 +169,56 @@ router.get("/magic/callback", async (req, res, next) => {
   }
 });
 
+
+router.get('/kakao', async(req, res, next) => {
+  try {
+    console.log('카카오 비동기 성공')
+      const { code } = req.query.code;
+      const tokenRes = await axios.post(
+      "https://kauth.kakao.com/oauth/token",
+      new URLSearchParams({
+        grant_type: "authorization_code",
+        client_id: process.env.KAKAO_CLIENT_ID,
+        redirect_uri: process.env.KAKAO_REDIRECT_URI,
+        code,
+      }),
+      { headers: { "Content-Type": "application/x-www-form-urlencoded" }}
+    );
+      const { access_token } = tokenRes.data;
+      const kakaoRes = await axios.get("https://kapi.kakao.com/v2/user/me", {
+        headers: { Authorization: `Bearer ${access_token}` },
+    });
+      const kakaoUser = kakaoRes.data;
+      const provider = "kakao";
+      const provider_id = kakaoUser.id;
+      const email = kakaoUser.kakao_account?.email || null;
+      const name = kakaoUser.kakao_account?.profile?.nickname || "카카오유저";
+
+    let [rows] = await db.query(
+      `SELECT * FROM oauth_users WHERE provider = ? AND provider_id = ?`,
+      [provider, provider_id]
+    );
+    let user = rows[0];
+    if (!user) {
+         const [result] = await db.query(
+          `INSERT INTO oauth_users (email, name, provider, provider_id) VALUES (?, ?, ?, ?)`,
+          [email, name, provider, provider_id]
+        );
+        user = { id: result.insertId, email, name, provider, provider_id };
+    }
+       const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+    res.redirect(`http://localhost:5173/oauth/callback?token=${token}`);
+} catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  } 
+})
+
+
 router.get('/signup-status', (req, res) => {
   const token = req.cookies?.signup_session;
   if (!token) return res.json({ verified: false });
@@ -184,9 +232,14 @@ router.get('/signup-status', (req, res) => {
 });
 
 // /api/me
-router.get(' /me', authMiddleware, async (req,res) => {
-    const user = req.user;
+router.get('/me', authMiddleware, async (req,res) => {
+  try {const user = req.user;
     res.json({ user });
-})
+  }
+    catch {
+      res.status(500).json({ error: 'Internal server error' });
+    }
+}
+)
 
 export default router;

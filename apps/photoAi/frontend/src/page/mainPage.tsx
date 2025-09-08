@@ -1,7 +1,6 @@
 import React from 'react'
 
 const MainPage = () => {
-  console.log("Google Client ID:", import.meta.env.VITE_GOOGLE_CLIENT_ID)
   return (
     <main>
     <div className="text-center max-w-4xl mx-auto">
