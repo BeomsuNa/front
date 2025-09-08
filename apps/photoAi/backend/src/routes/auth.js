@@ -172,8 +172,7 @@ router.get("/magic/callback", async (req, res, next) => {
 
 router.get('/kakao', async(req, res, next) => {
   try {
-    console.log('카카오 비동기 성공')
-      const { code } = req.query.code;
+      const { code } = req.query;
       const tokenRes = await axios.post(
       "https://kauth.kakao.com/oauth/token",
       new URLSearchParams({
@@ -192,7 +191,7 @@ router.get('/kakao', async(req, res, next) => {
       const provider = "kakao";
       const provider_id = kakaoUser.id;
       const email = kakaoUser.kakao_account?.email || null;
-      const name = kakaoUser.kakao_account?.profile?.nickname || "카카오유저";
+      const name = kakaoUser.kakao_account?.profile?.nickname || '무명';
 
     let [rows] = await db.query(
       `SELECT * FROM oauth_users WHERE provider = ? AND provider_id = ?`,

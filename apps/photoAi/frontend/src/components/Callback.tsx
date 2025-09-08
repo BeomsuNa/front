@@ -11,12 +11,11 @@ const OAuthCallback = () => {
     if (token) {
     localStorage.setItem("token", token);
     useAuth.getState().setToken(token);
-
+    navigate("/");
     }
     console.log('카카오 로그인 성공')
   }, [location, navigate]);
 
-  return <div>로그인 처리중...</div>;
 };
 
 export default OAuthCallback;
